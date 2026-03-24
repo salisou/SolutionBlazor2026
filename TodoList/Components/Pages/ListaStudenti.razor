@@ -1,0 +1,80 @@
+﻿@page "/studenti"
+@using TodoList.Models
+
+<h3 class="text-center mt-3">Lista Studenti</h3>
+
+@if (studenti == null)
+{
+    <p>Caricamento della pagina...</p>
+}
+else {
+    <div class="container">
+        <a href="/studenti/add" class="btn btn-primary mb-3 mt-5">Aggiungi nuovo Student</a>
+        <div class="container">
+            <table class="table">
+                <thead class="table-dark mt-3">
+                    <tr>
+                        <td>Id</td>
+                        <td>Nome</td>
+                        <td>Cognome</td>
+                        <td>Email</td>
+                        <td>Data di Nascita</td>
+                        <td>Azioni</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var studente in studenti)
+                    {
+                        <tr>
+                            <th>@studente.StudenteId</th>
+                            <td>@studente.Nome</td>
+                            <td>@studente.Cognome</td>
+                            <td>@studente.Email</td>
+                            <td>@studente.DataNascita</td>
+                            <td>
+                                <button class="btn btn-primary">Edit</button>
+                                <button class="btn btn-danger" @onclick="()=> DeleteStudente(studente.StudenteId)">Cancella</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+@code {
+    List<TodoList.Models.Studenti> studenti = [];
+    IQueryable<Studenti> St = default!;
+
+    protected override void OnInitialized()
+    {
+        studenti = LoadData();
+    }
+
+    private List<TodoList.Models.Studenti> LoadData()
+    {
+        List<TodoList.Models.Studenti> studenti = new()
+        {
+            new TodoList.Models.Studenti {StudenteId = 1, Nome = "Daniele", Cognome = "Nori", Email = "email@email.it", DataNascita = new DateOnly(1999, 1, 2)},
+            new TodoList.Models.Studenti {StudenteId = 2, Nome = "Rafael", Cognome= "Abreu Fonseca", Email="rafael.abreu.fonseca@gmail.com", DataNascita=new DateOnly(1991,12,31)},
+            new TodoList.Models.Studenti {StudenteId = 3, Nome = "Giulia", Cognome = "Bellotto", Email="g.bellotto@gmail.com", DataNascita = new DateOnly(1988,4,1)},
+            new TodoList.Models.Studenti {StudenteId = 4, Nome = "Giorgio", Cognome = "Befani", Email = "giorgiobefani.97@gmail.com", DataNascita = new DateOnly(1997,3,17)},
+            new TodoList.Models.Studenti {StudenteId = 5, Nome = "Cristian", Cognome = "Arcidiacono", Email = "cri.arcidiacono@libero.it", DataNascita = new DateOnly(1998,1,8)},
+            new TodoList.Models.Studenti {StudenteId = 6, Nome = "Ilaria", Cognome = "Di Pretoro", Email = "iladipre@hotmail.com", DataNascita = new DateOnly(1992,2,17)},
+            new TodoList.Models.Studenti {StudenteId = 7, Nome = "Yevgeniy", Cognome = "Di Pretoro", Email = "eugeniosakharov0@gmail.com", DataNascita = new DateOnly(2004,2,26)},
+            new TodoList.Models.Studenti {StudenteId = 8, Nome = "Nadia Ester", Cognome = "Wolkowa Zinkiewicz", Email = "ester.zinkiewicz@gmail.com", DataNascita = new DateOnly(1987,11,1)},
+            new TodoList.Models.Studenti {StudenteId = 9, Nome = "Alessio", Cognome = "Attilia", Email = "a.attilia@gmail.com", DataNascita = new DateOnly(2003,7,3)},
+            new TodoList.Models.Studenti {StudenteId= 10, Nome = "Luca", Cognome = "Schiavone", Email = "lucaschiavone@gov.it", DataNascita = new DateOnly(1980,2,11)}
+        };
+        return studenti; 
+    }
+
+    private void DeleteStudente(int id)
+    {
+        var valore = studenti.FirstOrDefault(s => s.StudenteId == id);
+        if(valore != null)
+        {
+            studenti.Remove(valore);
+        }
+    }
+}

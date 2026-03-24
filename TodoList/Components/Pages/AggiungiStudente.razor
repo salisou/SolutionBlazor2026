@@ -1,0 +1,43 @@
+﻿@page "/studenti/add"
+@inject NavigationManager nav
+@using TodoList.Models
+
+<h3>AggiungiStudente</h3>
+
+<EditForm Model="@studente" OnInvalidSubmit="HandleSubmit" FormName="AggiungiStudente">
+    <DataAnnotationsValidator />
+
+    <div class="mb-2">
+        <label>Nome</label>
+        <InputText type="text" class="form-control" @bind-Value="studente.Nome" placeholder="Inserisci il nome" />
+    </div>
+
+    <div class="mb-2">
+        <label>Cognome</label>
+        <InputText type="text" class="form-control" @bind-Value="studente.Cognome" placeholder="Inserisci il cognome" />
+    </div>
+
+    <div class="mb-2">
+        <label>Email</label>
+        <InputText type="text" class="form-control" @bind-Value="studente.Email" placeholder="Inserisci l'indirizzo mail"/>
+    </div>
+
+    <div class="mb-2">
+        <label>Data di Nascita</label>
+        <InputDate class="form-control" @bind-Value="studente.DataNascita"/>
+    </div>
+    
+    <button type="submit" class="btn btn-success">Salva la studente</button>
+</EditForm>
+
+@code {
+    Studenti studente = new();
+
+    private void HandleSubmit()
+    {
+        // qui salvo nel db il nuovo studente
+        Console.WriteLine($"Studente Creato: {studente.Nome}");
+
+        nav.NavigateTo("/studenti");
+    }
+}
