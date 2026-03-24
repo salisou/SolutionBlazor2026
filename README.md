@@ -1,1 +1,1 @@
-# SolutionBlazo
+# Corso blazor per principianti 
