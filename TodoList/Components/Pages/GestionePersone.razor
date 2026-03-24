@@ -1,0 +1,32 @@
+﻿@using TodoList.Models
+
+<h3>GestionePersone</h3>
+
+@code {
+    IQueryable<Persone> p = default!;
+    int idCount = 0;
+
+    protected override void OnInitialized()
+    {
+        p = LoadData().AsQueryable();
+        idCount = p.Count();
+    }
+
+    List<Persone> LoadData()
+    {
+        List<Persone> persone = new()
+        {
+            new Persone {Id = 1, Nome = "Daniele", Cognome = "Nori", Email = "email@email.it", DataNascita = new DateOnly(1999, 1, 2)},
+            new Persone {Id = 2, Nome = "Rafael", Cognome= "Abreu Fonseca", Email="rafael.abreu.fonseca@gmail.com", DataNascita=new DateOnly(1991,12,31)},
+            new Persone {Id = 3, Nome = "Giulia", Cognome = "Bellotto", Email="g.bellotto@gmail.com", DataNascita = new DateOnly(1988,4,1)},
+            new Persone {Id = 4, Nome = "Giorgio", Cognome = "Befani", Email = "giorgiobefani.97@gmail.com", DataNascita = new DateOnly(1997,3,17)},
+            new Persone {Id = 5, Nome = "Cristian", Cognome = "Arcidiacono", Email = "cri.arcidiacono@libero.it", DataNascita = new DateOnly(1998,1,8)},
+            new Persone {Id = 6, Nome = "Ilaria", Cognome = "Di Pretoro", Email = "iladipre@hotmail.com", DataNascita = new DateOnly(1992,2,17)},
+            new Persone {Id = 7, Nome = "Yevgeniy", Cognome = "Di Pretoro", Email = "eugeniosakharov0@gmail.com", DataNascita = new DateOnly(2004,2,26)},
+            new Persone {Id = 8, Nome = "Nadia Ester", Cognome = "Wolkowa Zinkiewicz", Email = "ester.zinkiewicz@gmail.com", DataNascita = new DateOnly(1987,11,1)},
+            new Persone {Id = 9, Nome = "Alessio", Cognome = "Attilia", Email = "a.attilia@gmail.com", DataNascita = new DateOnly(2003,7,3)},
+            new Persone {Id= 10, Nome = "Luca", Cognome = "Schiavone", Email = "lucaschiavone@gov.it", DataNascita = new DateOnly(1980,2,11)}
+        };
+        return persone;
+    }
+}
