@@ -1,20 +1,100 @@
-﻿@using TodoList.Models
+﻿@page "/persone"
 
-<h3>GestionePersone</h3>
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using TodoList.Models
+@using System.Linq
+
+@*
+  Component: GestionePersone
+  Scopo: gestire una lista di persone (CRUD semplice) in memoria.
+  Versione moderna: usa una List<T> come sorgente dati, EditForm con
+  validazione basata su DataAnnotations e QuickGrid per la visualizzazione.
+*@
+
+<h3 class="mb-4 fw-semibold">👤 Gestione Persone</h3>
+
+<!-- Blocco: Form per aggiungere / modificare una persona -->
+<!-- Usa EditForm con DataAnnotationsValidator per abilitare la validazione del modello -->
+<div class="card mb-4">
+    <div class="card-header">
+        <EditForm Model="psn" OnValidSubmit="AggiungiPersona">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nome</label>
+                    <InputText class="form-control" @bind-Value="psn.Nome" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Cognome</label>
+                    <InputText class="form-control" @bind-Value="psn.Cognome" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control" @bind-Value="psn.Email" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Data di Nascita</label>
+                    <InputDate class="form-control" @bind-Value="psn.DataNascita" />
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-success">@saveMode</button>
+                <button type="button" class="btn btn-secondary ms-2" @onclick="ResetForm">Annulla</button>
+            </div>
+        </EditForm>
+    </div>
+    <!-- /Form -->
+
+    <!-- Blocco: Griglia delle persone -->
+    <div class="card-body">
+        <QuickGrid Class="table table-striped" Items="persone.AsQueryable()">
+            <PropertyColumn Property="p => p.Id" Title="Id" Sortable="true" IsDefaultSortColumn/>
+            <PropertyColumn Property="p => p.Nome" Title="Nome" Sortable="true"/>
+            <PropertyColumn Property="p => p.Cognome" Title="Cognome" Sortable="true" />
+            <PropertyColumn Property="p => p.Email" Title="Email" Sortable="true" />
+            <PropertyColumn Property="p => p.DataNascita" Title="Data di Nascita" Sortable="true" />
+            <PropertyColumn Property="@(p => ComputeAge(p.DataNascita))" Title="Età" Sortable="true" />
+            <TemplateColumn Title="Azioni">
+                <button class="btn btn-danger btn-sm me-2" @onclick="(() => DeleteStudente(context))">Cancella</button>
+                <button class="btn btn-info btn-sm" @onclick="(() => ModificaStudente(context))">Modifica</button>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+</div>
 
 @code {
-    IQueryable<Persone> p = default!;
-    int idCount = 0;
+    /* ---------- Dichiarazione dello stato del componente ---------- */
+    // Lista in-memory delle persone: più semplice e moderna rispetto all'uso di IQueryable
+    private List<Persone> persone = new();
 
+    // contatore per generare ID univoci (in un'app reale userebbe il db)
+    private int idCount = 0;
+
+    // Modello bindato al form per aggiunta/modifica
+    private Persone psn { get; set; } = new();
+
+    // Testo del pulsante (Salva o Modifica)
+    private string saveMode = "Salva";
+
+    /* ---------- Ciclo di vita: inizializzazione ---------- */
     protected override void OnInitialized()
     {
-        p = LoadData().AsQueryable();
-        idCount = p.Count();
+        // Popola la lista iniziale
+        persone = LoadData();
+        idCount = persone.Count;
     }
 
-    List<Persone> LoadData()
+    /* ---------- Dati di esempio (LoadData) ----------
+       Restituisce una lista predefinita di persone. In un'app reale
+       questo viene sostituito da una chiamata a servizio/DB.
+    */
+    private List<Persone> LoadData()
     {
-        List<Persone> persone = new()
+        return new List<Persone>
         {
             new Persone {Id = 1, Nome = "Daniele", Cognome = "Nori", Email = "email@email.it", DataNascita = new DateOnly(1999, 1, 2)},
             new Persone {Id = 2, Nome = "Rafael", Cognome= "Abreu Fonseca", Email="rafael.abreu.fonseca@gmail.com", DataNascita=new DateOnly(1991,12,31)},
@@ -27,6 +107,81 @@
             new Persone {Id = 9, Nome = "Alessio", Cognome = "Attilia", Email = "a.attilia@gmail.com", DataNascita = new DateOnly(2003,7,3)},
             new Persone {Id= 10, Nome = "Luca", Cognome = "Schiavone", Email = "lucaschiavone@gov.it", DataNascita = new DateOnly(1980,2,11)}
         };
-        return persone;
+    }
+
+    /* ---------- Utility: calcola l'età a partire dalla DataNascita ---------- */
+    private int ComputeAge(DateOnly dataNascita)
+    {
+        var oggi = DateOnly.FromDateTime(DateTime.Now);
+        var eta = oggi.Year - dataNascita.Year;
+        if (dataNascita > oggi.AddYears(-eta)) eta--;
+        return eta;
+    }
+
+    /* ---------- Aggiungi / Modifica una persona ----------
+       Questo metodo è invocato quando il form è valido (OnValidSubmit).
+       Se psn.Id > 0 allora aggiorna l'elemento esistente, altrimenti ne crea uno nuovo.
+    */
+    private void AggiungiPersona()
+    {
+        if (string.IsNullOrWhiteSpace(psn.Nome) || psn.DataNascita == default) return;
+
+        if (psn.Id > 0)
+        {
+            // modifica: trova e aggiorna
+            var index = persone.FindIndex(p => p.Id == psn.Id);
+            if (index >= 0)
+            {
+                persone[index] = new Persone
+                {
+                    Id = psn.Id,
+                    Nome = psn.Nome,
+                    Cognome = psn.Cognome,
+                    Email = psn.Email,
+                    DataNascita = psn.DataNascita
+                };
+            }
+            saveMode = "Salva";
+        }
+        else
+        {
+            // aggiunta: assegna nuovo id e aggiunge alla lista
+            idCount++;
+            psn.Id = idCount;
+            persone.Add(psn);
+        }
+
+        // pulisci form e aggiorna UI
+        psn = new Persone();
+        StateHasChanged();
+    }
+
+    /* ---------- Prepara il form per la modifica di un elemento esistente ---------- */
+    private void ModificaStudente(Persone personaDaModificare)
+    {
+        psn = new Persone
+        {
+            Id = personaDaModificare.Id,
+            Nome = personaDaModificare.Nome,
+            Cognome = personaDaModificare.Cognome,
+            Email = personaDaModificare.Email,
+            DataNascita = personaDaModificare.DataNascita
+        };
+
+        saveMode = "Modifica";
+    }
+
+    /* ---------- Rimuove una persona dalla lista ---------- */
+    private void DeleteStudente(Persone personaDaCancellare)
+    {
+        persone.RemoveAll(p => p.Id == personaDaCancellare.Id);
+        StateHasChanged();
+    }
+
+    /* ---------- Reset del form (annulla) ---------- */
+    private void ResetForm()
+    {
+        psn = new Persone();
+        saveMode = "Salva";
     }
 }
